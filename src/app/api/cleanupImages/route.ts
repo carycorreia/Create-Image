@@ -54,7 +54,7 @@ export async function POST(request: Request) {
         urlType: typeof img.url,
         urlLength: img.url ? img.url.length : 0,
         createdAt: img.createdAt,
-        issues: []
+        issues: [] as string[]
       }));
 
       // Identify issues
