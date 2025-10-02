@@ -63,14 +63,16 @@ export async function POST(req: Request) {
       // Save to Firebase Storage
       let savedImage = null;
       try {
-        savedImage = await saveImageToStorage(output[0], userId, prompt, model);
+        const imageUrl = Array.isArray(output) ? output[0] : output;
+        savedImage = await saveImageToStorage(imageUrl, userId, prompt, model);
       } catch (storageError) {
         console.error('Storage error (non-fatal):', storageError);
         // Continue without saving to storage - image generation was successful
       }
       
+      const imageUrl = Array.isArray(output) ? output[0] : output;
       return Response.json({ 
-        output: output[0],
+        output: imageUrl,
         savedImage: savedImage
       });
     }
