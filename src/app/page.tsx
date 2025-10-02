@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { useAuth } from "../lib/hooks/useAuth";
 import SignInPage from "../components/SignInPage";
@@ -23,7 +23,7 @@ export default function Home() {
     }
   }, [user, fetchUserImages]);
 
-  const fetchUserImages = async () => {
+  const fetchUserImages = useCallback(async () => {
     if (!user) return;
     try {
       console.log('Fetching images for user:', user.uid);
@@ -33,7 +33,7 @@ export default function Home() {
     } catch (error) {
       console.error('Error fetching user images:', error);
     }
-  };
+  }, [user]);
 
   const models = {
     'flux-dev': {
