@@ -16,13 +16,6 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<'generate' | 'my-images'>('generate');
   const [userImages, setUserImages] = useState<any[]>([]);
 
-  // Fetch user images when user is authenticated
-  useEffect(() => {
-    if (user) {
-      fetchUserImages();
-    }
-  }, [user, fetchUserImages]);
-
   const fetchUserImages = useCallback(async () => {
     if (!user) return;
     try {
@@ -34,6 +27,13 @@ export default function Home() {
       console.error('Error fetching user images:', error);
     }
   }, [user]);
+
+  // Fetch user images when user is authenticated
+  useEffect(() => {
+    if (user) {
+      fetchUserImages();
+    }
+  }, [user, fetchUserImages]);
 
   const models = {
     'flux-dev': {
