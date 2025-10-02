@@ -16,7 +16,12 @@ export async function saveImageToStorage(
   userId: string,
   prompt: string,
   model: string
-): Promise<ImageData> {
+): Promise<ImageData | null> {
+  if (!db) {
+    console.warn('Firebase not initialized, skipping image save');
+    return null;
+  }
+  
   try {
     console.log('Saving image to Firestore:', { imageUrl, userId, prompt, model });
     
@@ -48,6 +53,11 @@ export async function saveImageToStorage(
 }
 
 export async function getUserImages(userId: string): Promise<ImageData[]> {
+  if (!db) {
+    console.warn('Firebase not initialized, returning empty array');
+    return [];
+  }
+  
   try {
     console.log('Fetching images for user:', userId);
     
