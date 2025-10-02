@@ -1,6 +1,6 @@
 import { storage, db } from './firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { collection, addDoc, query, where, orderBy, getDocs } from 'firebase/firestore';
+import { collection, addDoc, query, where, orderBy, getDocs, Firestore } from 'firebase/firestore';
 
 export interface ImageData {
   id?: string;
@@ -22,6 +22,8 @@ export async function saveImageToStorage(
     return null;
   }
   
+  const firestoreDb = db as Firestore;
+  
   try {
     console.log('Saving image to Firestore:', { imageUrl, userId, prompt, model });
     
@@ -37,7 +39,7 @@ export async function saveImageToStorage(
     
     console.log('Image data to save:', imageData);
     
-    const docRef = await addDoc(collection(db, 'images'), imageData);
+    const docRef = await addDoc(collection(firestoreDb, 'images'), imageData);
     
     console.log('Successfully saved image with ID:', docRef.id);
     
@@ -58,12 +60,14 @@ export async function getUserImages(userId: string): Promise<ImageData[]> {
     return [];
   }
   
+  const firestoreDb = db as Firestore;
+  
   try {
     console.log('Fetching images for user:', userId);
     
     // Temporary fix: Query without orderBy to avoid index requirement
     const q = query(
-      collection(db, 'images'),
+      collection(firestoreDb, 'images'),
       where('userId', '==', userId)
     );
     
