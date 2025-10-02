@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useEffect, useState } from "react";
-import { signInWithPopup, GoogleAuthProvider, signOut as firebaseSignOut } from "firebase/auth";
+import { signInWithPopup, GoogleAuthProvider, signOut as firebaseSignOut, Auth } from "firebase/auth";
 import { User } from "firebase/auth";
 
 interface AuthContextType {
@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Only initialize Firebase auth if environment variables are available
     if (process.env.NEXT_PUBLIC_FIREBASE_API_KEY && process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
-      import("../firebase/firebase").then(({ auth }) => {
+      import("../firebase/firebase").then(({ auth }: { auth: Auth }) => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
           setUser(user);
           setLoading(false);
@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     
-    const { auth } = await import("../firebase/firebase");
+    const { auth }: { auth: Auth } = await import("../firebase/firebase");
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     
-    const { auth } = await import("../firebase/firebase");
+    const { auth }: { auth: Auth } = await import("../firebase/firebase");
     try {
       await firebaseSignOut(auth);
     } catch (error) {
