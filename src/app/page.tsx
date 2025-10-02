@@ -22,6 +22,18 @@ export default function Home() {
       console.log('Fetching images for user:', user.uid);
       const images = await getUserImages(user.uid);
       console.log('Received images:', images);
+      
+      // Debug each image to check URL
+      images.forEach((img, index) => {
+        console.log(`Image ${index}:`, {
+          url: img.url,
+          prompt: img.prompt,
+          model: img.model,
+          hasUrl: !!img.url,
+          urlType: typeof img.url
+        });
+      });
+      
       setUserImages(images);
     } catch (error) {
       console.error('Error fetching user images:', error);
@@ -424,26 +436,44 @@ export default function Home() {
                   <div key={index} className="group relative">
                     <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
                     <div className="relative">
-                      <Image
-                        src={imageData.url}
-                        alt={imageData.prompt}
-                        width={300}
-                        height={300}
-                        className="rounded-2xl shadow-2xl transition-transform duration-300 group-hover:scale-105 w-full h-64 object-cover"
-                        unoptimized
-                      />
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-2xl flex items-center justify-center">
-                        <a
-                          href={imageData.url}
-                          download
-                          className="bg-white/90 hover:bg-white text-gray-800 px-4 py-2 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center"
-                        >
-                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          Download
-                        </a>
-                      </div>
+                      {imageData.url ? (
+                        <Image
+                          src={imageData.url}
+                          alt={imageData.prompt}
+                          width={300}
+                          height={300}
+                          className="rounded-2xl shadow-2xl transition-transform duration-300 group-hover:scale-105 w-full h-64 object-cover"
+                          unoptimized
+                          onError={(e) => {
+                            console.error('Image failed to load:', imageData.url);
+                            console.error('Image data:', imageData);
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-64 bg-gradient-to-br from-purple-500 to-blue-500 rounded-2xl flex items-center justify-center">
+                          <div className="text-center p-4">
+                            <svg className="w-12 h-12 text-white/60 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <p className="text-white/80 text-sm font-medium">Image not available</p>
+                            <p className="text-white/60 text-xs mt-1 break-words">{imageData.prompt}</p>
+                          </div>
+                        </div>
+                      )}
+                      {imageData.url && (
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-2xl flex items-center justify-center">
+                          <a
+                            href={imageData.url}
+                            download
+                            className="bg-white/90 hover:bg-white text-gray-800 px-4 py-2 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center"
+                          >
+                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Download
+                          </a>
+                        </div>
+                      )}
                     </div>
                     <div className="mt-3 space-y-2">
                       <p className="text-white/80 text-sm truncate" title={imageData.prompt}>
