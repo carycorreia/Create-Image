@@ -21,7 +21,7 @@ export default function Home() {
     if (user) {
       fetchUserImages();
     }
-  }, [user]);
+  }, [user, fetchUserImages]);
 
   const fetchUserImages = async () => {
     if (!user) return;
@@ -349,7 +349,7 @@ export default function Home() {
                     <div className="font-bold text-purple-300 text-base">Model Information</div>
                     <div><span className="text-white/70">Model:</span> <span className="text-white font-mono">{models[selectedModel as keyof typeof models].model}</span></div>
                     <div><span className="text-white/70">Provider:</span> <span className="text-white">Replicate</span></div>
-                    <div><span className="text-white/70">Prompt:</span> <span className="text-white italic">"{prompt}"</span></div>
+                        <div><span className="text-white/70">Prompt:</span> <span className="text-white italic">&ldquo;{prompt}&rdquo;</span></div>
                     <div className="pt-3 border-t border-white/20">
                       <div className="font-bold text-blue-300 text-base mb-2">Parameters</div>
                       <div className="grid grid-cols-2 gap-2 text-sm">
