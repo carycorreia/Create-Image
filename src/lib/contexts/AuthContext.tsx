@@ -25,12 +25,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Only initialize Firebase auth if environment variables are available
     if (process.env.NEXT_PUBLIC_FIREBASE_API_KEY && process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
-      import("../firebase/firebase").then(({ auth }: { auth: Auth }) => {
-        const unsubscribe = auth.onAuthStateChanged((user) => {
-          setUser(user);
+      import("../firebase/firebase").then(({ auth }) => {
+        if (auth) {
+          const unsubscribe = auth.onAuthStateChanged((user) => {
+            setUser(user);
+            setLoading(false);
+          });
+          return unsubscribe;
+        } else {
           setLoading(false);
-        });
-        return unsubscribe;
+        }
       }).catch((error) => {
         console.error("Error initializing Firebase auth:", error);
         setLoading(false);
@@ -47,12 +51,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     
-    const { auth }: { auth: Auth } = await import("../firebase/firebase");
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("Error signing in with Google", error);
+    const { auth } = await import("../firebase/firebase");
+    if (auth) {
+      const provider = new GoogleAuthProvider();
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (error) {
+        console.error("Error signing in with Google", error);
+      }
     }
   };
 
@@ -62,11 +68,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     
-    const { auth }: { auth: Auth } = await import("../firebase/firebase");
-    try {
-      await firebaseSignOut(auth);
-    } catch (error) {
-      console.error("Error signing out", error);
+    const { auth } = await import("../firebase/firebase");
+    if (auth) {
+      try {
+        await firebaseSignOut(auth);
+      } catch (error) {
+        console.error("Error signing out", error);
+      }
     }
   };
 
