@@ -1,5 +1,4 @@
 import Replicate from "replicate";
-import { saveImageToStorage } from "../../../lib/firebase/imageStorage";
 
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
@@ -36,10 +35,13 @@ export async function POST(req: Request) {
       // Ideogram returns a different format - it might be a single URL or array
       const imageUrl = Array.isArray(output) ? output[0] : output;
       
-      // Save to Firebase Storage
+      // Save to Firebase Storage (if available)
       let savedImage = null;
       try {
-        savedImage = await saveImageToStorage(imageUrl, userId, prompt, model);
+        if (process.env.NEXT_PUBLIC_FIREBASE_API_KEY && process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
+          const { saveImageToStorage } = await import("../../../lib/firebase/imageStorage");
+          savedImage = await saveImageToStorage(imageUrl, userId, prompt, model);
+        }
       } catch (storageError) {
         console.error('Storage error (non-fatal):', storageError);
         // Continue without saving to storage - image generation was successful
@@ -60,11 +62,14 @@ export async function POST(req: Request) {
         }
       );
       
-      // Save to Firebase Storage
+      // Save to Firebase Storage (if available)
       let savedImage = null;
       try {
-        const imageUrl = Array.isArray(output) ? output[0] : output;
-        savedImage = await saveImageToStorage(imageUrl, userId, prompt, model);
+        if (process.env.NEXT_PUBLIC_FIREBASE_API_KEY && process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
+          const { saveImageToStorage } = await import("../../../lib/firebase/imageStorage");
+          const imageUrl = Array.isArray(output) ? output[0] : output;
+          savedImage = await saveImageToStorage(imageUrl, userId, prompt, model);
+        }
       } catch (storageError) {
         console.error('Storage error (non-fatal):', storageError);
         // Continue without saving to storage - image generation was successful
