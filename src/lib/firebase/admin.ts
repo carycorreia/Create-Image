@@ -1,7 +1,9 @@
-import { cert, getApps, initializeApp, type App } from "firebase-admin/app";
-import { getAuth } from "firebase-admin/auth";
-import { getFirestore } from "firebase-admin/firestore";
-import { getStorage } from "firebase-admin/storage";
+/* eslint-disable @typescript-eslint/no-require-imports */
+/**
+ * Firebase Admin — server only.
+ * Uses require() so webpack does not attempt to bundle firebase-admin.
+ * Requires FIREBASE_SERVICE_ACCOUNT_JSON in the environment.
+ */
 
 type GoogleServiceAccountKey = {
   project_id?: string;
@@ -10,19 +12,21 @@ type GoogleServiceAccountKey = {
   type?: string;
 };
 
-/**
- * Server-only Firebase Admin. Requires FIREBASE_SERVICE_ACCOUNT_JSON
- * (full JSON of a service account key) in the environment.
- */
+type App = { name: string };
+
+function loadAdmin() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return require("firebase-admin") as any;
+}
+
 export function getFirebaseAdminApp(): App | null {
-  if (getApps().length > 0) {
-    return getApps()[0]!;
+  const admin = loadAdmin();
+  if (admin.apps.length > 0) {
+    return admin.apps[0];
   }
 
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-  if (!raw?.trim()) {
-    return null;
-  }
+  if (!raw?.trim()) return null;
 
   try {
     const credentials = JSON.parse(raw) as GoogleServiceAccountKey;
@@ -39,8 +43,8 @@ export function getFirebaseAdminApp(): App | null {
       return null;
     }
 
-    return initializeApp({
-      credential: cert(credentials as Parameters<typeof cert>[0]),
+    return admin.initializeApp({
+      credential: admin.credential.cert(credentials),
       projectId,
       storageBucket,
     });
@@ -52,12 +56,14 @@ export function getFirebaseAdminApp(): App | null {
 
 export function getAdminAuth() {
   const app = getFirebaseAdminApp();
-  return app ? getAuth(app) : null;
+  if (!app) return null;
+  return loadAdmin().auth(app);
 }
 
 export function getAdminDb() {
   const app = getFirebaseAdminApp();
-  return app ? getFirestore(app) : null;
+  if (!app) return null;
+  return loadAdmin().firestore(app);
 }
 
 export function getAdminBucket() {
@@ -65,5 +71,5 @@ export function getAdminBucket() {
   if (!app) return null;
   const name = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
   if (!name) return null;
-  return getStorage(app).bucket(name);
+  return loadAdmin().storage(app).bucket(name);
 }

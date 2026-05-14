@@ -1,7 +1,9 @@
 import { randomUUID } from "crypto";
-import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import type { ImageData } from "./imageStorage";
 import { getAdminBucket, getAdminDb } from "./admin";
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { FieldValue, Timestamp } = require("firebase-admin/firestore");
 
 function extensionFromContentType(contentType: string | null): string {
   if (!contentType) return "png";
