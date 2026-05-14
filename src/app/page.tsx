@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { useAuth } from "../lib/hooks/useAuth";
 import SignInPage from "../components/SignInPage";
-import { getUserImages } from "../lib/firebase/imageStorage";
 
 export default function Home() {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -17,28 +16,40 @@ export default function Home() {
   const [userImages, setUserImages] = useState<any[]>([]);
   const [deletingImages, setDeletingImages] = useState(false);
   const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
+  const [galleryLoadError, setGalleryLoadError] = useState<string | null>(null);
+  const [persistHint, setPersistHint] = useState<string | null>(null);
 
   const fetchUserImages = useCallback(async () => {
     if (!user) return;
+    setGalleryLoadError(null);
     try {
-      console.log('Fetching images for user:', user.uid);
-      const images = await getUserImages(user.uid);
-      console.log('Received images:', images);
-      
-      // Debug each image to check URL
-      images.forEach((img, index) => {
-        console.log(`Image ${index}:`, {
-          url: img.url,
-          prompt: img.prompt,
-          model: img.model,
-          hasUrl: !!img.url,
-          urlType: typeof img.url
-        });
-      });
-      
+      const idToken = await user.getIdToken();
+      const res = await fetch(
+        `/api/userImages?userId=${encodeURIComponent(user.uid)}`,
+        {
+          headers: { Authorization: `Bearer ${idToken}` },
+        }
+      );
+      const data = await res.json();
+
+      if (data.setupError) {
+        setUserImages([]);
+        setGalleryLoadError(data.setupError);
+        return;
+      }
+
+      if (!res.ok) {
+        setUserImages([]);
+        setGalleryLoadError(data.error || `Gallery request failed (${res.status})`);
+        return;
+      }
+
+      const images = Array.isArray(data.images) ? data.images : [];
       setUserImages(images);
     } catch (error) {
-      console.error('Error fetching user images:', error);
+      console.error("Error fetching user images:", error);
+      const msg = error instanceof Error ? error.message : String(error);
+      setGalleryLoadError(`Cannot load your gallery: ${msg}`);
     }
   }, [user]);
 
@@ -144,6 +155,7 @@ export default function Home() {
     
     setLoading(true);
     setError(null);
+    setPersistHint(null);
     setImage(null);
 
     try {
@@ -162,6 +174,13 @@ export default function Home() {
       setImage(data.output);
       
       console.log('Image generation response:', data);
+
+      if (data.persistStatus && data.persistStatus !== 'saved') {
+        setPersistHint(
+          data.persistHint ||
+            'This image was not saved to your gallery. Check Vercel env (FIREBASE_SERVICE_ACCOUNT_JSON) and redeploy.'
+        );
+      }
       
       // Refresh user images after successful generation
       if (data.savedImage) {
@@ -377,6 +396,12 @@ export default function Home() {
           </div>
         )}
 
+        {persistHint && (
+          <div className="backdrop-blur-xl bg-amber-500/10 border border-amber-400/40 rounded-2xl p-6 mb-8">
+            <p className="text-amber-100 text-sm leading-relaxed">{persistHint}</p>
+          </div>
+        )}
+
         {/* Generated Image */}
         {image && (
           <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl shadow-2xl p-8">
@@ -498,6 +523,11 @@ export default function Home() {
                 🖼️ My Images
               </h2>
               <p className="text-white/70">Your AI-generated image collection</p>
+              {galleryLoadError && (
+                <div className="mt-4 mx-auto max-w-xl text-left backdrop-blur-xl bg-red-500/10 border border-red-400/30 rounded-xl p-4">
+                  <p className="text-red-200 text-sm leading-relaxed">{galleryLoadError}</p>
+                </div>
+              )}
               {userImages.length > 0 && (
                 <button
                   onClick={deleteAllImages}
