@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 /**
  * Firebase Admin — server only.
  * Uses require() so webpack does not attempt to bundle firebase-admin.
@@ -15,8 +14,7 @@ type GoogleServiceAccountKey = {
 type App = { name: string };
 
 function loadAdmin() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return require("firebase-admin") as any;
+  return require("firebase-admin") as any; // loaded at runtime to avoid webpack bundling
 }
 
 export function getFirebaseAdminApp(): App | null {

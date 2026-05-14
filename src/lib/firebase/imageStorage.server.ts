@@ -2,8 +2,7 @@ import { randomUUID } from "crypto";
 import type { ImageData } from "./imageStorage";
 import { getAdminBucket, getAdminDb } from "./admin";
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { FieldValue, Timestamp } = require("firebase-admin/firestore");
+const { FieldValue, Timestamp } = require("firebase-admin/firestore"); // runtime require to avoid webpack bundling
 
 function extensionFromContentType(contentType: string | null): string {
   if (!contentType) return "png";
