@@ -18,7 +18,7 @@ function buildFirebaseDownloadUrl(bucketName: string, objectPath: string, token:
 }
 
 function toDate(value: unknown): Date {
-  if (value instanceof Timestamp) return value.toDate();
+  if (value instanceof Timestamp) return (value as { toDate(): Date }).toDate();
   if (value instanceof Date) return value;
   if (typeof (value as { toDate?: () => Date })?.toDate === "function") {
     return (value as { toDate: () => Date }).toDate();
